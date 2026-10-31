@@ -9,6 +9,8 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
 import com.badlogic.gdx.utils.IntMap;
 
 import java.util.zip.Deflater;
@@ -25,7 +27,8 @@ public class Main extends Game {
 
     public SpriteBatch batch;
     public ShapeRenderer shapes;
-    public BitmapFont font;
+    public BitmapFont font, bigFont; // 갈무리11 (한글 픽셀 폰트, OFL)
+    private FreeTypeFontGenerator fontGen, bigGen;
     public Assets assets;
     public Audio audio;
     public Controls controls;
@@ -39,9 +42,10 @@ public class Main extends Game {
     public void create() {
         batch = new SpriteBatch();
         shapes = new ShapeRenderer();
-        font = new BitmapFont();
-        font.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-        font.setUseIntegerPositions(false);
+        fontGen = new FreeTypeFontGenerator(Gdx.files.internal("fonts/Galmuri11.ttf"));
+        bigGen = new FreeTypeFontGenerator(Gdx.files.internal("fonts/Galmuri11-Bold.ttf"));
+        font = makeFont(fontGen, 12);
+        bigFont = makeFont(bigGen, 24);
         assets = new Assets();
         controls = new Controls(System.getenv("PUFF_SCRIPT"));
         audio = new Audio();
@@ -60,6 +64,18 @@ public class Main extends Game {
         String lv = System.getenv("PUFF_LEVEL");
         if (lv != null && !lv.trim().isEmpty()) setScreen(new GameScreen(this, Integer.parseInt(lv.trim())));
         else setScreen(new TitleScreen(this));
+    }
+
+    /** incremental 모드: 화면에 처음 나오는 글자만 그때그때 생성 (한글 11,172자를 미리 굽지 않음) */
+    private static BitmapFont makeFont(FreeTypeFontGenerator gen, int size) {
+        FreeTypeFontParameter p = new FreeTypeFontParameter();
+        p.size = size;
+        p.incremental = true;
+        p.minFilter = Texture.TextureFilter.Linear;
+        p.magFilter = Texture.TextureFilter.Linear;
+        BitmapFont f = gen.generateFont(p);
+        f.setUseIntegerPositions(false);
+        return f;
     }
 
     /** 세션 초기화 후 1스테이지부터 */
@@ -95,6 +111,9 @@ public class Main extends Game {
         batch.dispose();
         shapes.dispose();
         font.dispose();
+        bigFont.dispose();
+        fontGen.dispose();
+        bigGen.dispose();
         assets.dispose();
         audio.dispose();
     }

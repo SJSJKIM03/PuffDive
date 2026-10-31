@@ -59,18 +59,17 @@ public class ClearScreen extends ScreenAdapter {
         b.setColor(1, 1, 1, 1);
         b.draw(g.assets.pNormal, Main.VW / 2 - 24, 320 + Math.abs(MathUtils.sin(t * 5)) * 24, 48, 48);
 
-        f.getData().setScale(3f);
-        center(b, f, "ALL STAGES CLEARED!", 300, new Color(1, 0.9f, 0.3f, 1));
-        f.getData().setScale(1.4f);
+        BitmapFont big = g.bigFont;
+        big.getData().setScale(1.5f);
+        center(b, big, "모든 스테이지 클리어!", 300, new Color(1, 0.9f, 0.3f, 1));
+        big.getData().setScale(1f);
         Session s = g.session;
-        center(b, f, "TIME  " + GameScreen.formatTime(s.time), 220, Color.WHITE);
-        center(b, f, "STARS  " + s.stars + " / " + totalStars, 190, Color.WHITE);
-        center(b, f, "SECRET GLITCH STAR  " + (s.glitchStar ? "FOUND!" : "not found... (look beyond the edge in stage 2)"), 160,
+        center(b, f, "클리어 시간  " + GameScreen.formatTime(s.time), 230, Color.WHITE);
+        center(b, f, "모은 별  " + s.stars + " / " + totalStars, 205, Color.WHITE);
+        center(b, f, "비밀 글리치 별  " + (s.glitchStar ? "발견!" : "못 찾음... (2스테이지 맵 끝 너머를 살펴보자)"), 180,
             s.glitchStar ? new Color(0.3f, 1, 1, 1) : new Color(0.7f, 0.7f, 0.7f, 1));
-        center(b, f, "KNOCKED DOWN  " + s.falls + "      ABILITIES COPIED  " + s.abilitiesCopied, 130, Color.WHITE);
-        f.getData().setScale(1.2f);
-        if (((int) (t * 2)) % 2 == 0) center(b, f, "ENTER : play again from STAGE 1      Q : title", 70, new Color(1, 0.6f, 0.78f, 1));
-        f.getData().setScale(1f);
+        center(b, f, "쓰러진 횟수  " + s.falls + "      복사한 능력  " + s.abilitiesCopied, 155, Color.WHITE);
+        if (((int) (t * 2)) % 2 == 0) center(b, f, "스페이스 / 엔터 : 1스테이지부터 다시      Q : 타이틀로", 80, new Color(1, 0.6f, 0.78f, 1));
         f.setColor(Color.WHITE);
         b.end();
     }

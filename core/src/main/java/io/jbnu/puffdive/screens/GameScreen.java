@@ -122,11 +122,11 @@ public class GameScreen extends ScreenAdapter {
         for (int i = 0; i < Player.MAX_HP; i++)
             b.draw(i < p.hp ? a.heart : a.heartEmpty, 10 + i * 20, Main.VH - 25, 16, 16);
 
-        String ab = p.stone ? "STONE (X: back)" : p.mouth != null ? "MOUTH FULL  X:spit  DOWN:swallow"
-            : p.ability == Ability.FIRE ? "FIRE (hold X)" : p.ability == Ability.STONE ? "STONE (X: drop)" : "-";
+        String ab = p.stone ? "돌 (X: 원래대로)" : p.mouth != null ? "입에 물었다!  X 뱉기 / 아래 삼키기"
+            : p.ability == Ability.FIRE ? "불꽃 (X 누르고 있기)" : p.ability == Ability.STONE ? "돌 (X: 낙하)" : "없음";
         f.setColor(p.ability == Ability.FIRE ? new Color(1, 0.6f, 0.2f, 1)
             : p.ability == Ability.STONE ? new Color(0.8f, 0.8f, 0.9f, 1) : Color.WHITE);
-        f.draw(b, "ABILITY: " + ab, 120, Main.VH - 11);
+        f.draw(b, "능력: " + ab, 120, Main.VH - 11);
         f.setColor(Color.WHITE);
 
         b.draw(a.star, Main.VW - 190, Main.VH - 28, 22, 22);
@@ -143,8 +143,8 @@ public class GameScreen extends ScreenAdapter {
         }
 
         // 스테이지 이름
-        String title = world.inGlitch() ? "STAGE ??? - " + world.level().name
-            : "STAGE " + (levelIndex + 1) + " - " + world.level().name;
+        String title = world.inGlitch() ? "스테이지 ??? - " + world.level().name
+            : "스테이지 " + (levelIndex + 1) + " - " + world.level().name;
         if (introTime < 2.5f) {
             float al = Math.min(1, (2.5f - introTime) * 2);
             bigText(title, Main.VH / 2 + 60, 2f, new Color(1, 1, 1, al));
@@ -160,20 +160,20 @@ public class GameScreen extends ScreenAdapter {
                 b.setColor(0, 0, 0, 0.6f);
                 b.draw(a.white, 0, 0, Main.VW, Main.VH);
                 b.setColor(1, 1, 1, 1);
-                bigText("PAUSED", Main.VH / 2 + 70, 3f, Color.WHITE);
-                centerText("P / ESC : resume", Main.VH / 2 + 10);
-                centerText("R : restart stage      Q : quit to title      M : sound " + (g.audio.muted() ? "ON" : "OFF"), Main.VH / 2 - 15);
-                centerText("Move: ARROWS   Jump/Puff: Z   Inhale/Ability: X   Drop ability: C", Main.VH / 2 - 60);
+                bigText("일시정지", Main.VH / 2 + 70, 3f, Color.WHITE);
+                centerText("P / ESC : 계속하기", Main.VH / 2 + 10);
+                centerText("R : 스테이지 다시 시작      Q : 타이틀로      M : 소리 " + (g.audio.muted() ? "켜기" : "끄기"), Main.VH / 2 - 15);
+                centerText("방향키: 이동   스페이스: 점프 / 퍼프   X: 빨아들이기 / 능력   C: 능력 버리기", Main.VH / 2 - 60);
                 break;
             case CLEAR:
-                bigText("STAGE CLEAR!", Main.VH / 2 + 40, 3f, new Color(1, 0.9f, 0.3f, 1));
-                centerText("stars this stage: " + world.levelStars + " / " + world.totalStars(), Main.VH / 2 - 20);
+                bigText("스테이지 클리어!", Main.VH / 2 + 40, 3f, new Color(1, 0.9f, 0.3f, 1));
+                centerText("이번 스테이지 별: " + world.levelStars + " / " + world.totalStars(), Main.VH / 2 - 20);
                 break;
             case DOWN:
                 b.setColor(0, 0, 0, Math.min(0.6f, stateTime));
                 b.draw(a.white, 0, 0, Main.VW, Main.VH);
                 b.setColor(1, 1, 1, 1);
-                bigText("OUCH... TRY AGAIN!", Main.VH / 2 + 20, 2.5f, new Color(1, 0.5f, 0.6f, 1));
+                bigText("아야... 다시 도전!", Main.VH / 2 + 20, 2.5f, new Color(1, 0.5f, 0.6f, 1));
                 break;
             default:
                 break;
@@ -182,8 +182,8 @@ public class GameScreen extends ScreenAdapter {
     }
 
     private void bigText(String s, float y, float scale, Color c) {
-        BitmapFont f = g.font;
-        f.getData().setScale(scale);
+        BitmapFont f = g.bigFont; // 24px 굵은 폰트, scale 2 = 48px
+        f.getData().setScale(scale / 2f);
         layout.setText(f, s);
         f.setColor(0, 0, 0, c.a * 0.6f);
         f.draw(g.batch, s, (Main.VW - layout.width) / 2 + 3, y - 3);

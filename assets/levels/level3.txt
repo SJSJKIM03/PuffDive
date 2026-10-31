@@ -1,9 +1,9 @@
-name=Magma Core
+name=용암 심장부
 theme=2
 ceiling=true
-hint=4,3,RUN! The spike ceiling is coming down!
-hint=8,7,Lava burns. Use the platform or PUFF over it!
-hint=12,17,Checkpoints refill your hearts
+hint=4,3,도망쳐! 가시 천장이 내려온다!
+hint=8,7,용암은 뜨겁다! 발판을 밟거나 퍼프로 건너자
+hint=12,17,체크포인트에 닿으면 체력이 회복된다
 map:
 ##########################
 #........................#

@@ -1,10 +1,10 @@
-name=Crystal Cave
+name=수정 동굴
 theme=1
 openRight=true
-hint=2,5,Swallow a gray STONE guy, then X: STONE DROP breaks cracked blocks
-hint=2,11,X again: turn back to normal    C: drop ability
-hint=13,17,What lies beyond the edge...?
-hint=4,31,Need STONE here? A gray guy waits below.
+hint=2,5,회색 돌 몬스터를 삼키고 X: 돌 낙하로 금 간 블록을 부숴라
+hint=2,11,X 한 번 더: 원래대로    C: 능력 버리기
+hint=13,17,맵 끝 너머엔 뭐가 있을까...?
+hint=4,31,돌 능력이 필요해? 아래에 회색 몬스터가 있다
 map:
 ##########################
 #........................#

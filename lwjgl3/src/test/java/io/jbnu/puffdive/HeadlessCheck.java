@@ -52,6 +52,36 @@ public class HeadlessCheck extends ApplicationAdapter {
         return String.format("tile=(%.1f, %.1f) hp=%d", w.p.box.x / T, w.p.box.y / T, w.p.hp);
     }
 
+    /** 한글 폰트가 실제 글리프를 만드는지 확인: 레벨 힌트/UI 문구를 폰트 아틀라스 PNG로 저장 */
+    private void fontPreview(String out) {
+        String n = System.getenv("PUFF_NATIVES");
+        System.load(n + "/libgdx-freetypearm64.dylib");
+        com.badlogic.gdx.utils.SharedLibraryLoader.setLoaded("gdx-freetype");
+        com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator gen =
+            new com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator(Gdx.files.internal("fonts/Galmuri11.ttf"));
+        StringBuilder sb = new StringBuilder();
+        for (String path : Session.LEVELS) for (Level.Hint h : Level.parse(Gdx.files.internal(path).readString("UTF-8")).hints) sb.append(h.text);
+        sb.append("구름정원수정동굴용암심장부스테이지일시정지능력없음불꽃돌입에물었다뱉기삼키기아야다시도전클리어방향키스페이스점프퍼프");
+        com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter p =
+            new com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter();
+        p.size = 24;
+        p.characters = sb.toString();
+        com.badlogic.gdx.graphics.g2d.PixmapPacker packer = new com.badlogic.gdx.graphics.g2d.PixmapPacker(1024, 512,
+            com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888, 2, false);
+        p.packer = packer;
+        com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeBitmapFontData data = gen.generateData(p);
+        int missing = 0;
+        for (char ch : sb.toString().toCharArray()) if (ch != ' ' && data.getGlyph(ch) == null) missing++;
+        com.badlogic.gdx.graphics.Pixmap page = packer.getPages().first().getPixmap();
+        com.badlogic.gdx.graphics.Pixmap bg = new com.badlogic.gdx.graphics.Pixmap(page.getWidth(), 160, com.badlogic.gdx.graphics.Pixmap.Format.RGBA8888);
+        bg.setColor(0.13f, 0.13f, 0.2f, 1);
+        bg.fill();
+        bg.setBlending(com.badlogic.gdx.graphics.Pixmap.Blending.SourceOver);
+        bg.drawPixmap(page, 0, 0);
+        com.badlogic.gdx.graphics.PixmapIO.writePNG(Gdx.files.absolute(out), bg);
+        check("korean font has all glyphs", missing == 0, "missing=" + missing + " preview=" + out);
+    }
+
     @Override
     public void create() {
         try {
@@ -137,6 +167,8 @@ public class HeadlessCheck extends ApplicationAdapter {
             t.printStackTrace();
             fails++;
         }
+        String preview = System.getenv("PUFF_FONT_PREVIEW");
+        if (preview != null) fontPreview(preview);
         System.out.println(fails == 0 ? "ALL CHECKS PASSED" : fails + " CHECK(S) FAILED");
         Gdx.app.exit();
     }

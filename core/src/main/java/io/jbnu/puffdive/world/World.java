@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
@@ -53,6 +54,7 @@ public class World {
     private final Particles particles = new Particles();
     private final Array<Projectile> shots = new Array<>();
     private final Array<Popup> popups = new Array<>();
+    private final GlyphLayout layout = new GlyphLayout();
 
     private float respawnX, respawnY;
     private float knock;
@@ -243,14 +245,14 @@ public class World {
 
         // ---- 위험 지형 / 맵 밖 ----
         if (Physics.touchesHazard(lv, p.box, 1.5f)) {
-            hazardHit("OUCH!");
+            hazardHit("아야!");
             return;
         }
         if (!inGlitch() && lv.openRight && p.box.x > lv.width() + 6) {
             enterGlitch();
             return;
         }
-        if (p.box.y < -96 || p.box.y > lv.height() + 96) hazardHit("FELL!");
+        if (p.box.y < -96 || p.box.y > lv.height() + 96) hazardHit("추락!");
     }
 
     private float feetY(int g) { return g > 0 ? p.box.y : p.box.y + p.box.height; }
@@ -282,7 +284,7 @@ public class World {
         if (broke) {
             rig.shake(0.6f);
             sfx(Sfx.CRASH);
-            popups.add(new Popup("CRASH!", cx(p.box), p.box.y + 40, 0.8f, 0.9f, 1));
+            popups.add(new Popup("와장창!", cx(p.box), p.box.y + 40, 0.8f, 0.9f, 1));
         }
         return broke;
     }
@@ -309,7 +311,7 @@ public class World {
                 p.mouth = e.type;
                 p.squash = -0.3f;
                 sfx(Sfx.GULP);
-                popups.add(new Popup("GULP!", cx(p.box), p.box.y + 36, 1, 0.8f, 0.9f));
+                popups.add(new Popup("꿀꺽!", cx(p.box), p.box.y + 36, 1, 0.8f, 0.9f));
                 break;
             }
         }
@@ -331,7 +333,7 @@ public class World {
         if (t == Enemy.Type.FIRE) a = Ability.FIRE;
         else if (t == Enemy.Type.STONE) a = Ability.STONE;
         if (a == Ability.NONE) {
-            popups.add(new Popup("...nothing", cx(p.box), p.box.y + 36, 0.9f, 0.9f, 0.9f));
+            popups.add(new Popup("...아무 능력 없음", cx(p.box), p.box.y + 36, 0.9f, 0.9f, 0.9f));
             return;
         }
         p.ability = a;
@@ -339,7 +341,7 @@ public class World {
         session.abilitiesCopied++;
         particles.emit(cx(p.box), cy(p.box), 30, 260, 1, 0.95f, 0.4f, 6, 0.6f, 0);
         rig.shake(0.25f);
-        popups.add(new Popup(a == Ability.FIRE ? "FIRE!" : "STONE!", cx(p.box), p.box.y + 40,
+        popups.add(new Popup(a == Ability.FIRE ? "불꽃 능력!" : "돌 능력!", cx(p.box), p.box.y + 40,
             a == Ability.FIRE ? 1f : 0.75f, a == Ability.FIRE ? 0.5f : 0.75f, a == Ability.FIRE ? 0.1f : 0.8f));
     }
 
@@ -353,7 +355,7 @@ public class World {
 
     private void loseAbility(boolean voluntary) {
         if (p.ability == Ability.NONE) return;
-        popups.add(new Popup(voluntary ? "ability off" : "lost ability!", cx(p.box), p.box.y + 40, 0.8f, 0.8f, 0.8f));
+        popups.add(new Popup(voluntary ? "능력 해제" : "능력을 잃었다!", cx(p.box), p.box.y + 40, 0.8f, 0.8f, 0.8f));
         p.ability = Ability.NONE;
         p.stone = false;
         puffBurst(cx(p.box), cy(p.box), 1, 1, 0.5f);
@@ -471,7 +473,7 @@ public class World {
             if (!e.dead && e.box.overlaps(p.box)) {
                 if (p.stone) {
                     killEnemy(e, true);
-                    popups.add(new Popup("SMASH!", cx(e.box), e.box.y + 30, 0.8f, 0.8f, 0.9f));
+                    popups.add(new Popup("쾅!", cx(e.box), e.box.y + 30, 0.8f, 0.8f, 0.9f));
                 } else if (!p.inhaling) {
                     hurt(cx(e.box));
                 }
@@ -526,7 +528,7 @@ public class World {
                     rig.shake(0.5f);
                     particles.emit(cx(it.box), cy(it.box), 40, 300, 0.2f, 1, 1, 6, 0.8f, 0);
                     sfx(Sfx.POWER);
-                    popups.add(new Popup("SECRET GLITCH STAR!", cx(it.box), it.box.y + 30, 0.3f, 1, 1));
+                    popups.add(new Popup("비밀 글리치 별!", cx(it.box), it.box.y + 30, 0.3f, 1, 1));
                     break;
                 case CHECKPOINT:
                     if (!it.active) {
@@ -536,7 +538,7 @@ public class World {
                         particles.emit(cx(it.box), it.box.y + 40, 20, 180, 0.3f, 1, 0.5f, 5, 0.6f, 0);
                         p.hp = Player.MAX_HP; // 체크포인트는 체력 회복
                         sfx(Sfx.STAR);
-                        popups.add(new Popup("CHECKPOINT  HP FULL", cx(it.box), it.box.y + 56, 0.4f, 1, 0.5f));
+                        popups.add(new Popup("체크포인트 · 체력 회복", cx(it.box), it.box.y + 56, 0.4f, 1, 0.5f));
                     }
                     break;
                 case GOAL:
@@ -572,7 +574,7 @@ public class World {
         rig.shake(0.8f);
         rig.snap(cx(p.box), cy(p.box), gl.width(), gl.height());
         sfx(Sfx.GLITCH);
-        popups.add(new Popup("??? 0UT 0F B0UNDS ???", cx(p.box), p.box.y + 50, 1, 0.2f, 1));
+        popups.add(new Popup("??? 맵 밖으로 나갔다 ???", cx(p.box), p.box.y + 50, 1, 0.2f, 1));
     }
 
     private void exitGlitch() {
@@ -591,7 +593,7 @@ public class World {
         rig.snap(cx(p.box), cy(p.box), main.level.width(), main.level.height());
         particles.emit(cx(p.box), cy(p.box), 40, 260, 1, 0.3f, 1, 6, 0.8f, 0);
         sfx(Sfx.GLITCH, 0.6f);
-        popups.add(new Popup("SHORTCUT!", cx(p.box), p.box.y + 40, 1, 0.4f, 1));
+        popups.add(new Popup("지름길!", cx(p.box), p.box.y + 40, 1, 0.4f, 1));
     }
 
     private void updateCeiling(float dt, Level lv) {
@@ -607,7 +609,7 @@ public class World {
         float gap = ceilY - top;
         danger = MathUtils.clamp(1 - gap / (5f * T), 0, 1);
         if (danger > 0.75f) rig.shake(dt * 0.5f);
-        if (gap <= 0) hazardHit("SQUISHED!");
+        if (gap <= 0) hazardHit("깔렸다!");
     }
 
     private static float approach(float v, float target, float step) {
@@ -789,10 +791,12 @@ public class World {
 
         // ---- 팝업 텍스트 ----
         for (Popup pp : popups) {
+            layout.setText(font, pp.text);
+            float px = pp.x - layout.width / 2;
             font.setColor(0, 0, 0, Math.min(1, pp.life));
-            font.draw(batch, pp.text, pp.x - pp.text.length() * 3.5f + 1, pp.y - 1);
+            font.draw(batch, pp.text, px + 1, pp.y - 1);
             font.setColor(pp.r, pp.g, pp.b, Math.min(1, pp.life));
-            font.draw(batch, pp.text, pp.x - pp.text.length() * 3.5f, pp.y);
+            font.draw(batch, pp.text, px, pp.y);
         }
         font.setColor(Color.WHITE);
         batch.end();

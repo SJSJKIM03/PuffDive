@@ -60,26 +60,28 @@ public class TitleScreen extends ScreenAdapter {
         b.draw(g.assets.pPuff, Main.VW / 2 + 150 + MathUtils.sin(t * 3) * 20, py, 48, 48);
         b.draw(g.assets.pNormal, Main.VW / 2 - 200, 310 + Math.abs(MathUtils.sin(t * 4)) * 20, 40, 40);
 
-        f.getData().setScale(4f);
-        layout.setText(f, "PUFF DIVE");
-        f.setColor(0.4f, 0.1f, 0.3f, 1);
-        f.draw(b, "PUFF DIVE", (Main.VW - layout.width) / 2 + 4, 380 - 4);
-        f.setColor(1f, 0.6f, 0.78f, 1);
-        f.draw(b, "PUFF DIVE", (Main.VW - layout.width) / 2, 380);
-        f.getData().setScale(1.2f);
-        center(b, f, "Dive down the maze. Inhale. Copy. Puff. Escape.", 300, new Color(0.15f, 0.2f, 0.45f, 1));
-        f.getData().setScale(1f);
+        BitmapFont big = g.bigFont;
+        big.getData().setScale(2.5f);
+        layout.setText(big, "PUFF DIVE");
+        big.setColor(0.4f, 0.1f, 0.3f, 1);
+        big.draw(b, "PUFF DIVE", (Main.VW - layout.width) / 2 + 4, 400 - 4);
+        big.setColor(1f, 0.6f, 0.78f, 1);
+        big.draw(b, "PUFF DIVE", (Main.VW - layout.width) / 2, 400);
+        big.getData().setScale(1f);
+        center(b, big, "퍼프 다이브", 318, new Color(0.9f, 0.35f, 0.55f, 1));
+        center(b, f, "미로 아래로 파고들어라! 빨아들이고, 따라 하고, 부풀어 올라라!", 282, new Color(0.15f, 0.2f, 0.45f, 1));
         String[] lines = {
-            "ARROWS : move          Z / SPACE : jump  (again in mid-air = PUFF)",
-            "X : inhale enemy  ->  X spit star  /  DOWN swallow = COPY ABILITY",
-            "FIRE: hold X to shoot     STONE: X to drop & smash cracked blocks",
-            "C : drop ability     DOWN + Z : through thin platforms     P / ESC : pause     M : mute",
+            "방향키 : 이동            스페이스 : 점프 (공중에서 한 번 더 = 퍼프 비행)",
+            "X : 적 빨아들이기  ->  X 별 뱉기 / 아래 키 삼키기 = 능력 복사",
+            "불꽃 능력 : X 누르고 있으면 발사       돌 능력 : X로 낙하해 금 간 블록 부수기",
+            "C : 능력 버리기      아래 + 스페이스 : 얇은 발판 내려가기",
+            "P / ESC : 일시정지      M : 소리 끄기/켜기",
         };
         for (int i = 0; i < lines.length; i++) center(b, f, lines[i], 230 - i * 24, new Color(0.1f, 0.12f, 0.3f, 1));
         if (((int) (t * 2)) % 2 == 0) {
-            f.getData().setScale(1.6f);
-            center(b, f, "PRESS ENTER", 90, new Color(0.9f, 0.2f, 0.45f, 1));
-            f.getData().setScale(1f);
+            big.getData().setScale(0.75f);
+            center(b, big, "스페이스를 눌러 시작", 82, new Color(0.9f, 0.2f, 0.45f, 1));
+            big.getData().setScale(1f);
         }
         f.setColor(Color.WHITE);
         b.end();

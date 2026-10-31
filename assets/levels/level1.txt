@@ -1,10 +1,10 @@
-name=Cloud Garden
+name=구름 정원
 theme=0
-hint=2,3,ARROWS: move    Z: jump
-hint=3,8,Hold X near an enemy: INHALE  ->  X: spit star / DOWN: swallow
-hint=7,12,Press Z again in mid-air to PUFF and float (3 times)
-hint=11,17,DOWN + Z: drop through thin platforms
-hint=12,27,Touch the DOOR to clear the stage!
+hint=2,3,방향키: 이동    스페이스: 점프
+hint=3,8,적 가까이서 X 꾹: 빨아들이기  ->  X: 별 뱉기 / 아래 키: 삼키기
+hint=7,12,공중에서 스페이스 한 번 더: 퍼프 비행 (3번까지)
+hint=11,17,아래 키 + 스페이스: 얇은 발판 내려가기
+hint=12,27,문에 닿으면 스테이지 클리어!
 map:
 ##########################
 #........................#
