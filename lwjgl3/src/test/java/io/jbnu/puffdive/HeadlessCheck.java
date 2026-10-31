@@ -34,7 +34,7 @@ public class HeadlessCheck extends ApplicationAdapter {
     private World world(int level, String script, Controls[] out) {
         Controls c = new Controls(script);
         out[0] = c;
-        return new World(new Session(), c, level, new OrthographicCamera(), 640, 480);
+        return new World(new Session(), c, null, level, new OrthographicCamera(), 640, 480);
     }
 
     private void run(World w, Controls c, int frames) {
@@ -64,6 +64,22 @@ public class HeadlessCheck extends ApplicationAdapter {
                 check("level " + (i + 1) + " loads & idles", w.p.hp > 0 && w.p.grounded,
                     w.level().name + " " + w.level().w + "x" + w.level().h + " " + pos(w));
             }
+
+            // 1b) 몬스터가 가시 위로 걸어가지 않음 (1스테이지 가시 바닥 왼쪽 워커)
+            World sw = world(0, null, c);
+            Enemy spikeWalker = null;
+            for (Enemy e : sw.cur.enemies)
+                if (e.type == Enemy.Type.WALKER && e.spawnY == (sw.level().h - 1 - 14) * T) spikeWalker = e;
+            run(sw, c[0], 60 * 20);
+            check("walker never steps onto spikes", spikeWalker != null && !spikeWalker.dead && spikeWalker.box.x + spikeWalker.box.width <= 8 * T + 1,
+                spikeWalker == null ? "not found" : String.format("x=%.2f..%.2f tiles", spikeWalker.box.x / T, (spikeWalker.box.x + spikeWalker.box.width) / T));
+
+            // 1c) 3스테이지 적들이 위험 지형에 빠져 사라지지 않음
+            sw = world(2, null, c);
+            for (int i = 0; i < 60 * 15; i++) { c[0].update(i); sw.p.invuln = 99; sw.update(1f / 60f); sw.p.hp = 5; }
+            int alive = 0;
+            for (Enemy e : sw.cur.enemies) if (!e.dead) alive++;
+            check("L3 enemies stay off lava/spikes", alive == sw.cur.enemies.size, alive + "/" + sw.cur.enemies.size + " alive");
 
             // 2) 1스테이지: 오른쪽으로 걸으면 첫 구멍으로 떨어짐
             World w = world(0, "10:+RIGHT", c);
@@ -108,7 +124,7 @@ public class HeadlessCheck extends ApplicationAdapter {
 
             // 7) 3스테이지: 가만히 있으면 천장에 깔림
             w = world(2, null, c);
-            run(w, c[0], 60 * 14);
+            run(w, c[0], 60 * 25);
             check("L3 spike ceiling hurts idle player", w.p.hp < 5, pos(w) + " ceilY=" + w.ceilY / T);
 
             // 8) 일시정지와 무관하게 골 문 접촉 시 클리어

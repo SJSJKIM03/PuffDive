@@ -30,6 +30,8 @@ public class TitleScreen extends ScreenAdapter {
     @Override
     public void render(float delta) {
         t += delta;
+        g.audio.setDuck(1f);
+        g.audio.music("cloud");
         if (t > 0.3f && g.controls.pressed(Act.CONFIRM)) { g.newGame(); return; }
 
         ScreenUtils.clear(0, 0, 0, 1);
@@ -71,7 +73,7 @@ public class TitleScreen extends ScreenAdapter {
             "ARROWS : move          Z / SPACE : jump  (again in mid-air = PUFF)",
             "X : inhale enemy  ->  X spit star  /  DOWN swallow = COPY ABILITY",
             "FIRE: hold X to shoot     STONE: X to drop & smash cracked blocks",
-            "C : drop ability     DOWN + Z : through thin platforms     P / ESC : pause",
+            "C : drop ability     DOWN + Z : through thin platforms     P / ESC : pause     M : mute",
         };
         for (int i = 0; i < lines.length; i++) center(b, f, lines[i], 230 - i * 24, new Color(0.1f, 0.12f, 0.3f, 1));
         if (((int) (t * 2)) % 2 == 0) {

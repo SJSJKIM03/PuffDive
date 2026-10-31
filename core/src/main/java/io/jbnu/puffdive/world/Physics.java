@@ -71,4 +71,10 @@ public final class Physics {
     public static boolean solidBelow(Level lv, float x, float y) {
         return lv.isSolid(fl(x / T), fl(y / T)) || lv.tile(fl(x / T), fl(y / T)) == '-';
     }
+
+    /** 적이 걸어도 되는 바닥인지 (가시·용암은 고체지만 밟으면 안 됨) */
+    public static boolean walkableBelow(Level lv, float x, float y) {
+        char c = lv.tile(fl(x / T), fl(y / T));
+        return c == '#' || c == 'X' || c == '-';
+    }
 }

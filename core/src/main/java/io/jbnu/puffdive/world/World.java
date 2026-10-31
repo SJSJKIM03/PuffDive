@@ -13,6 +13,8 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 
 import io.jbnu.puffdive.Assets;
+import io.jbnu.puffdive.Audio;
+import io.jbnu.puffdive.Audio.Sfx;
 import io.jbnu.puffdive.Controls;
 import io.jbnu.puffdive.Controls.Act;
 import io.jbnu.puffdive.Session;
@@ -35,9 +37,11 @@ public class World {
     private static final float PUFF_V = 250, PUFF_GRAVITY = 650, PUFF_MAX_FALL = 110;
     private static final float STONE_GRAVITY = 2600, STONE_MAX_FALL = 900;
     private static final float INHALE_RANGE = 3.6f * T, INHALE_PULL = 280;
-    private static final float CEIL_GAP = 9 * T;
+    private static final float CEIL_GAP = 11 * T;
+    private static final float CEIL_DELAY = 4f, CEIL_SPEED = 30, CEIL_MAX_SPEED = 50;
 
     private final Controls in;
+    private final Audio audio;
     private final Session session;
     public final int levelIndex;
     public final Area main;
@@ -61,8 +65,9 @@ public class World {
     private float ceilTimer;
     public float danger;
 
-    public World(Session session, Controls in, int levelIndex, OrthographicCamera cam, float viewW, float viewH) {
+    public World(Session session, Controls in, Audio audio, int levelIndex, OrthographicCamera cam, float viewW, float viewH) {
         this.session = session;
+        this.audio = audio;
         this.in = in;
         this.levelIndex = levelIndex;
         this.main = new Area(Level.parse(Gdx.files.internal(Session.LEVELS[levelIndex]).readString("UTF-8")));
@@ -79,6 +84,12 @@ public class World {
     public Level level() { return cur.level; }
     public boolean inGlitch() { return cur != main; }
     public int totalStars() { return main.count(Item.Kind.STAR); }
+
+    private void sfx(Sfx s, float vol) {
+        if (audio != null) audio.play(s, vol);
+    }
+
+    private void sfx(Sfx s) { sfx(s, 1f); }
 
     private static float cx(Rectangle r) { return r.x + r.width / 2; }
     private static float cy(Rectangle r) { return r.y + r.height / 2; }
@@ -179,6 +190,7 @@ public class World {
                     p.vy = JUMP * g;
                     p.grounded = false;
                     p.squash = -0.35f;
+                    sfx(Sfx.JUMP, 0.7f);
                     particles.emit(cx(p.box), feetY(g), 6, 60, 1, 1, 1, 5, 0.35f, 0);
                 }
             } else if (p.mouth == null && !p.inhaling && p.puffsUsed < Player.MAX_PUFFS) {
@@ -187,6 +199,7 @@ public class World {
                 p.vy = PUFF_V * g;
                 p.squash = -0.25f;
                 puffBurst(cx(p.box), feetY(g), 1, 1, 1);
+                sfx(Sfx.PUFF);
             }
         }
         // 가변 점프: 상승 중 버튼을 떼면 짧게
@@ -213,7 +226,7 @@ public class World {
                     if (!wasGrounded && fallSpeed > 380) {
                         p.squash = 0.35f;
                         particles.emit(cx(p.box), feetY(g), 8, 90, 1, 1, 1, 5, 0.4f, 0);
-                        if (p.stone) rig.shake(0.45f);
+                        if (p.stone) { rig.shake(0.45f); sfx(Sfx.CRASH, 0.6f); }
                     }
                     p.grounded = true;
                     p.puffing = false;
@@ -268,6 +281,7 @@ public class World {
         }
         if (broke) {
             rig.shake(0.6f);
+            sfx(Sfx.CRASH);
             popups.add(new Popup("CRASH!", cx(p.box), p.box.y + 40, 0.8f, 0.9f, 1));
         }
         return broke;
@@ -294,6 +308,7 @@ public class World {
                 killEnemy(e, false);
                 p.mouth = e.type;
                 p.squash = -0.3f;
+                sfx(Sfx.GULP);
                 popups.add(new Popup("GULP!", cx(p.box), p.box.y + 36, 1, 0.8f, 0.9f));
                 break;
             }
@@ -305,6 +320,7 @@ public class World {
         shots.add(new Projectile(Projectile.Kind.STAR, cx(p.box) + dir * 18, cy(p.box), dir * 430, 0, 1.4f));
         p.mouth = null;
         p.squash = 0.25f;
+        sfx(Sfx.SPIT);
         rig.shake(0.12f);
     }
 
@@ -319,6 +335,7 @@ public class World {
             return;
         }
         p.ability = a;
+        sfx(Sfx.POWER);
         session.abilitiesCopied++;
         particles.emit(cx(p.box), cy(p.box), 30, 260, 1, 0.95f, 0.4f, 6, 0.6f, 0);
         rig.shake(0.25f);
@@ -331,6 +348,7 @@ public class World {
         shots.add(new Projectile(Projectile.Kind.FIRE, cx(p.box) + dir * 14, cy(p.box) + MathUtils.random(-4, 4),
             dir * 380, 0, 0.9f));
         p.fireCooldown = 0.28f;
+        sfx(Sfx.SHOOT, 0.45f);
     }
 
     private void loseAbility(boolean voluntary) {
@@ -346,7 +364,7 @@ public class World {
     }
 
     private void hurt(float fromX) {
-        if (p.invuln > 0 || p.stone) return;
+        if (p.invuln > 0 || p.stone || p.hp <= 0) return;
         p.hp--;
         p.invuln = 1.4f;
         knock = 0.25f;
@@ -357,6 +375,7 @@ public class World {
         p.mouth = null;
         loseAbility(false);
         rig.shake(0.5f);
+        sfx(Sfx.HURT);
         particles.emit(cx(p.box), cy(p.box), 16, 200, 1, 0.3f, 0.4f, 6, 0.5f, 0);
     }
 
@@ -364,6 +383,7 @@ public class World {
         if (p.hp <= 0) return;
         p.hp--;
         rig.shake(0.6f);
+        sfx(Sfx.HURT);
         particles.emit(cx(p.box), cy(p.box), 22, 240, 1, 0.3f, 0.3f, 6, 0.6f, 0);
         if (p.hp <= 0) return; // GameScreen 이 쓰러짐 처리
         p.box.setPosition(respawnX, respawnY);
@@ -384,6 +404,7 @@ public class World {
         if (burst) {
             particles.emit(cx(e.box), cy(e.box), 18, 220, 1, 0.9f, 0.3f, 6, 0.5f, 0);
             rig.shake(0.15f);
+            sfx(Sfx.CRASH, 0.35f);
         }
     }
 
@@ -423,7 +444,7 @@ public class World {
                 if (e.grounded) {
                     float aheadX = e.dir > 0 ? e.box.x + e.box.width + 2 : e.box.x - 2;
                     float footY = g > 0 ? e.box.y - 2 : e.box.y + e.box.height + 2;
-                    if (!Physics.solidBelow(lv, aheadX, footY)) e.dir = -e.dir;
+                    if (!Physics.walkableBelow(lv, aheadX, footY)) e.dir = -e.dir; // 가시·용암·낭떠러지 앞에서 돌아섬
                 }
                 if (e.type == Enemy.Type.FIRE) {
                     float dx = pcx - cx(e.box), dyy = pcy - cy(e.box);
@@ -440,6 +461,12 @@ public class World {
                 }
             }
             if (e.box.y < -200) e.dead = true;
+            float underY = g > 0 ? e.box.y - 1 : e.box.y + e.box.height + 1;
+            boolean onHazard = Level.isHazard(lv.tile((int) Math.floor(cx(e.box) / T), (int) Math.floor(underY / T)));
+            if (!e.dead && e.type != Enemy.Type.BAT && (onHazard || Physics.touchesHazard(lv, e.box, -3f))) {
+                killEnemy(e, true); // 위험 지형에 떨어지면 적도 사라짐
+                continue;
+            }
             // 플레이어와 접촉
             if (!e.dead && e.box.overlaps(p.box)) {
                 if (p.stone) {
@@ -490,6 +517,7 @@ public class World {
                     it.taken = true;
                     levelStars++;
                     particles.emit(cx(it.box), cy(it.box), 14, 160, 1, 0.9f, 0.3f, 5, 0.5f, 0);
+                    sfx(Sfx.STAR, 0.8f);
                     popups.add(new Popup("+1", cx(it.box), it.box.y + 24, 1, 0.9f, 0.3f));
                     break;
                 case GLITCH_STAR:
@@ -497,6 +525,7 @@ public class World {
                     session.glitchStar = true;
                     rig.shake(0.5f);
                     particles.emit(cx(it.box), cy(it.box), 40, 300, 0.2f, 1, 1, 6, 0.8f, 0);
+                    sfx(Sfx.POWER);
                     popups.add(new Popup("SECRET GLITCH STAR!", cx(it.box), it.box.y + 30, 0.3f, 1, 1));
                     break;
                 case CHECKPOINT:
@@ -505,13 +534,16 @@ public class World {
                         respawnX = it.box.x + 4;
                         respawnY = it.box.y;
                         particles.emit(cx(it.box), it.box.y + 40, 20, 180, 0.3f, 1, 0.5f, 5, 0.6f, 0);
-                        popups.add(new Popup("CHECKPOINT", cx(it.box), it.box.y + 56, 0.4f, 1, 0.5f));
+                        p.hp = Player.MAX_HP; // 체크포인트는 체력 회복
+                        sfx(Sfx.STAR);
+                        popups.add(new Popup("CHECKPOINT  HP FULL", cx(it.box), it.box.y + 56, 0.4f, 1, 0.5f));
                     }
                     break;
                 case GOAL:
                     if (!inGlitch()) {
                         cleared = true;
                         session.stars += levelStars;
+                        sfx(Sfx.CLEAR);
                         particles.emit(cx(it.box), cy(it.box), 60, 320, 1, 0.9f, 0.3f, 7, 1f, 200);
                         rig.shake(0.3f);
                     }
@@ -539,6 +571,7 @@ public class World {
         shots.clear();
         rig.shake(0.8f);
         rig.snap(cx(p.box), cy(p.box), gl.width(), gl.height());
+        sfx(Sfx.GLITCH);
         popups.add(new Popup("??? 0UT 0F B0UNDS ???", cx(p.box), p.box.y + 50, 1, 0.2f, 1));
     }
 
@@ -557,6 +590,7 @@ public class World {
         rig.shake(0.6f);
         rig.snap(cx(p.box), cy(p.box), main.level.width(), main.level.height());
         particles.emit(cx(p.box), cy(p.box), 40, 260, 1, 0.3f, 1, 6, 0.8f, 0);
+        sfx(Sfx.GLITCH, 0.6f);
         popups.add(new Popup("SHORTCUT!", cx(p.box), p.box.y + 40, 1, 0.4f, 1));
     }
 
@@ -564,15 +598,15 @@ public class World {
         danger = 0;
         if (inGlitch() || !lv.spikeCeiling) return;
         ceilTimer += dt;
-        if (ceilTimer > 2.5f) {
-            float speed = Math.min(42 + (ceilTimer - 2.5f) * 0.8f, 72);
+        if (ceilTimer > CEIL_DELAY) {
+            float speed = Math.min(CEIL_SPEED + (ceilTimer - CEIL_DELAY) * 0.4f, CEIL_MAX_SPEED);
             ceilY -= speed * dt;
         }
         float top = p.box.y + p.box.height;
         if (ceilY > top + CEIL_GAP) ceilY = top + CEIL_GAP; // 고무줄: 너무 멀어지지 않게
         float gap = ceilY - top;
         danger = MathUtils.clamp(1 - gap / (5f * T), 0, 1);
-        if (danger > 0.6f) rig.shake(dt * 0.6f);
+        if (danger > 0.75f) rig.shake(dt * 0.5f);
         if (gap <= 0) hazardHit("SQUISHED!");
     }
 

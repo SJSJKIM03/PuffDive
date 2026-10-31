@@ -39,6 +39,8 @@ public class ClearScreen extends ScreenAdapter {
     @Override
     public void render(float delta) {
         t += delta;
+        g.audio.setDuck(1f);
+        g.audio.music("cloud");
         if (t > 1f && g.controls.pressed(Act.CONFIRM)) { g.newGame(); return; }
         if (t > 1f && g.controls.pressed(Act.QUIT)) { g.go(new TitleScreen(g)); return; }
 

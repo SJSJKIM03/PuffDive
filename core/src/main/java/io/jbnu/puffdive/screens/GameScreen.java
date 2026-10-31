@@ -23,6 +23,7 @@ import io.jbnu.puffdive.world.World;
 /** 스테이지 진행 화면. 상태: 플레이 / 일시정지 / 스테이지 클리어 / 쓰러짐 */
 public class GameScreen extends ScreenAdapter {
     private enum State { PLAY, PAUSE, CLEAR, DOWN }
+    private static final String[] TRACKS = {"cloud", "cave", "magma"};
 
     private final Main g;
     private final int levelIndex;
@@ -43,7 +44,7 @@ public class GameScreen extends ScreenAdapter {
     }
 
     private void load() {
-        world = new World(g.session, g.controls, levelIndex, cam, Main.VW, Main.VH);
+        world = new World(g.session, g.controls, g.audio, levelIndex, cam, Main.VW, Main.VH);
         state = State.PLAY;
         stateTime = 0;
         introTime = 0;
@@ -83,6 +84,9 @@ public class GameScreen extends ScreenAdapter {
                 if (stateTime > 1.6f) { load(); return; }
                 break;
         }
+
+        g.audio.music(world.inGlitch() ? "glitch" : TRACKS[Math.min(levelIndex, TRACKS.length - 1)]);
+        g.audio.setDuck(state == State.PAUSE ? 0.3f : 1f);
 
         ScreenUtils.clear(0, 0, 0, 1);
         viewport.apply();
@@ -158,7 +162,7 @@ public class GameScreen extends ScreenAdapter {
                 b.setColor(1, 1, 1, 1);
                 bigText("PAUSED", Main.VH / 2 + 70, 3f, Color.WHITE);
                 centerText("P / ESC : resume", Main.VH / 2 + 10);
-                centerText("R : restart stage      Q : quit to title", Main.VH / 2 - 15);
+                centerText("R : restart stage      Q : quit to title      M : sound " + (g.audio.muted() ? "ON" : "OFF"), Main.VH / 2 - 15);
                 centerText("Move: ARROWS   Jump/Puff: Z   Inhale/Ability: X   Drop ability: C", Main.VH / 2 - 60);
                 break;
             case CLEAR:

@@ -12,7 +12,7 @@ import com.badlogic.gdx.utils.Array;
  * 스크립트 예: "30:+RIGHT,90:-RIGHT,95:*JUMP"  (+누름, -뗌, *한 프레임 탭)
  */
 public class Controls {
-    public enum Act { LEFT, RIGHT, UP, DOWN, JUMP, ACTION, DROP, PAUSE, CONFIRM, RESTART, QUIT }
+    public enum Act { LEFT, RIGHT, UP, DOWN, JUMP, ACTION, DROP, PAUSE, CONFIRM, RESTART, QUIT, MUTE }
 
     private static final int[][] KEYS = {
         {Input.Keys.LEFT, Input.Keys.A},
@@ -26,6 +26,7 @@ public class Controls {
         {Input.Keys.ENTER, Input.Keys.SPACE, Input.Keys.Z},
         {Input.Keys.R},
         {Input.Keys.Q},
+        {Input.Keys.M},
     };
 
     private final boolean[] now = new boolean[Act.values().length];

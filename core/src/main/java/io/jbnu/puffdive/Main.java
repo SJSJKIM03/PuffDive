@@ -27,6 +27,7 @@ public class Main extends Game {
     public ShapeRenderer shapes;
     public BitmapFont font;
     public Assets assets;
+    public Audio audio;
     public Controls controls;
     public Session session = new Session();
 
@@ -43,6 +44,7 @@ public class Main extends Game {
         font.setUseIntegerPositions(false);
         assets = new Assets();
         controls = new Controls(System.getenv("PUFF_SCRIPT"));
+        audio = new Audio();
 
         // 문서/테스트용: PUFF_SHOTS="120:/path/a.png,300:/path/b.png" → 해당 프레임 스크린샷 저장 후 종료
         String spec = System.getenv("PUFF_SHOTS");
@@ -75,6 +77,7 @@ public class Main extends Game {
     @Override
     public void render() {
         controls.update(frame);
+        if (controls.pressed(Controls.Act.MUTE)) audio.toggleMute();
         super.render();
         String path = shots.get((int) frame);
         if (path != null) {
@@ -93,5 +96,6 @@ public class Main extends Game {
         shapes.dispose();
         font.dispose();
         assets.dispose();
+        audio.dispose();
     }
 }
