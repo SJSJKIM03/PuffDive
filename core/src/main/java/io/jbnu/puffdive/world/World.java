@@ -116,7 +116,7 @@ public class World {
             pp.y += 30 * dt;
             if (pp.life <= 0) popups.removeIndex(i);
         }
-        rig.setJitter(inGlitch() ? 2.5f : 0);
+        rig.setJitter(0); // 숨은 구역도 카메라 떨림 없음 (가독성)
         rig.update(cx(p.box), cy(p.box), p.vx, p.vy, lv.gravity, lv.width(), lv.height(), dt);
     }
 
@@ -649,17 +649,15 @@ public class World {
         int x0 = Math.max(0, (int) (left / T)), x1 = Math.min(lv.w - 1, (int) ((left + vw) / T));
         int y0 = Math.max(0, (int) (bottom / T)), y1 = Math.min(lv.h - 1, (int) ((bottom + vh) / T));
         float[] bc = BLOCK[th], cc = CAP[th];
-        if (th == 3) {
-            float hue = (clock * 90) % 360;
-            Color hc = new Color().fromHsv(hue, 0.7f, 1f);
-            bc = new float[]{hc.r, hc.g, hc.b};
+        if (th == 3) { // 색이 아주 천천히 보라 <-> 분홍 사이를 오감
+            float k = 0.5f + 0.5f * MathUtils.sin(clock * 0.6f);
+            bc = new float[]{0.55f + 0.25f * k, 0.35f, 0.85f - 0.15f * k};
         }
         int g = lv.gravity;
         for (int x = x0; x <= x1; x++) {
             for (int y = y0; y <= y1; y++) {
                 char c = lv.t[x][y];
                 float px = x * T, py = y * T;
-                if (th == 3 && MathUtils.randomBoolean(0.01f)) px += MathUtils.random(-6, 6);
                 switch (c) {
                     case '#':
                         batch.setColor(bc[0], bc[1], bc[2], 1);
@@ -701,6 +699,12 @@ public class World {
 
         // ---- 힌트 텍스트 ----
         for (Level.Hint h : lv.hints) {
+            if (th != 0) {
+                layout.setText(font, h.text);
+                batch.setColor(0, 0, 0, 0.55f);
+                batch.draw(a.white, h.x - 6, h.y - layout.height - 6, layout.width + 12, layout.height + 12);
+                batch.setColor(1, 1, 1, 1);
+            }
             font.setColor(0, 0, 0, 0.55f);
             font.draw(batch, h.text, h.x + 1.5f, h.y - 1.5f);
             font.setColor(th == 0 ? new Color(0.15f, 0.2f, 0.45f, 1) : new Color(1, 1, 1, 0.92f));
@@ -717,9 +721,9 @@ public class World {
                     draw(batch, a.star, cx(it.box), it.box.y - 4 + bob, 28, 28, false, false, 1, 1, MathUtils.sin(clock * 2) * 15, 0.5f);
                     break;
                 case GLITCH_STAR:
-                    Color gc = new Color().fromHsv((clock * 300) % 360, 0.8f, 1);
+                    Color gc = new Color().fromHsv((clock * 60) % 360, 0.6f, 1);
                     batch.setColor(gc);
-                    draw(batch, a.star, cx(it.box) + MathUtils.random(-2, 2), it.box.y - 8 + bob, 36, 36, false, false, 1, 1, clock * 200, 0.5f);
+                    draw(batch, a.star, cx(it.box), it.box.y - 8 + bob, 36, 36, false, false, 1, 1, clock * 60, 0.5f);
                     batch.setColor(1, 1, 1, 1);
                     break;
                 case CHECKPOINT:
@@ -804,15 +808,16 @@ public class World {
         // ---- 글리치 월드 스캔라인 ----
         if (inGlitch()) {
             shapes.begin(ShapeRenderer.ShapeType.Filled);
-            for (float y = bottom; y < bottom + vh; y += 4) {
-                shapes.setColor(0, 0, 0, 0.18f);
-                shapes.rect(left, y, vw, 1.5f);
+            float y0s = (float) Math.floor(bottom / 6) * 6;
+            for (float y = y0s; y < bottom + vh; y += 6) {
+                shapes.setColor(0, 0, 0, 0.07f);
+                shapes.rect(left, y, vw, 2f);
             }
-            for (int i = 0; i < 3; i++) {
-                if (MathUtils.randomBoolean(0.3f)) {
-                    shapes.setColor(MathUtils.random(), 0, 1, 0.25f);
-                    shapes.rect(left, bottom + MathUtils.random(vh), vw, MathUtils.random(2, 12));
-                }
+            // 가끔(약 4초에 한 번) 얇은 줄 하나만 스쳐 지나감
+            float sweep = (clock % 4f) / 0.6f;
+            if (sweep < 1) {
+                shapes.setColor(0.6f, 0.3f, 1f, 0.12f);
+                shapes.rect(left, bottom + vh * (1 - sweep), vw, 3);
             }
             shapes.end();
         }
@@ -880,10 +885,8 @@ public class World {
                     s.rect(x - r, y - 200, r * 1.5f, 200 + r);
                     break;
                 default:
-                    if (MathUtils.randomBoolean(0.5f)) {
-                        s.setColor(MathUtils.random(), MathUtils.random(), 1, 0.3f);
-                        s.rect(x, y, r * 2, MathUtils.random(4, 20));
-                    }
+                    s.setColor(0.5f, 0.3f, 0.9f, 0.10f + 0.05f * MathUtils.sin(clock + k));
+                    s.rect(x, y, r * 1.6f, r * 0.4f);
                     break;
             }
         }
